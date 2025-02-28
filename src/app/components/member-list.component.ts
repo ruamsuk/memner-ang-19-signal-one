@@ -98,9 +98,9 @@ import { MemberDetailComponent } from './member-detail.component';
                 {{ member.birthdate | thaiDate }}
               </td>
               <td>
-                <i class="pi pi-list mr-auto text-sky-300 hover:text-sky-400" (click)="memberDetail(member)"
-                   pTooltip="รายละเอียด"></i>
                 @if (admin()) {
+                  <i class="pi pi-list mr-auto text-sky-300 hover:text-sky-400" (click)="memberDetail(member)"
+                     pTooltip="รายละเอียด"></i>
                   <i
                     class="pi pi-pen-to-square mx-4 text-green-300 hover:text-green-400"
                     (click)="openDialog(member)" pTooltip="แก้ไขข้อมูล"
@@ -110,11 +110,25 @@ import { MemberDetailComponent } from './member-detail.component';
                     class="pi pi-trash text-orange-300 hover:text-orange-500"
                     (click)="confirm($event, member.id)" pTooltip="ลบข้อมูล"
                   ></i>
+                } @else if (isMember()) {
+                  <i class="pi pi-list mr-auto text-sky-300 hover:text-sky-400" (click)="memberDetail(member)"
+                     pTooltip="รายละเอียด"></i>
                 } @else {
                   <i class="pi pi-lock text-100"></i>
                 }
               </td>
             </tr>
+          </ng-template>
+          <ng-template #footer>
+            <td colspan="5">
+              @if (!admin && !isMember) {
+                <div>
+                  <p-message severity="warn" icon="pi pi-exclamation-circle" styleClass="center-v italic">
+                    Visitors are not allowed to view member details.
+                  </p-message>
+                </div>
+              }
+            </td>
           </ng-template>
         </p-table>
       </div>
@@ -155,6 +169,7 @@ export class MemberListComponent implements OnDestroy {
 
   searchControl = new FormControl();
   admin = signal(false);
+  isMember = signal(false);
   loading = signal(true);
   members: Member[] = [];
   member$!: Observable<Member[]>;
@@ -203,6 +218,7 @@ export class MemberListComponent implements OnDestroy {
   chkRole() {
     this.authService.userProfile$.pipe(take(1)).subscribe((user: any) => {
       this.admin.set(user.role === 'admin' || user.role === 'manager');
+      this.isMember.set(user.role === 'member');
     });
   }
 

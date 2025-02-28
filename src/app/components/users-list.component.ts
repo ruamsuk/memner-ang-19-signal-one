@@ -1,8 +1,9 @@
-import { Component, inject, OnDestroy, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
+import { Component, DestroyRef, inject, OnDestroy, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { DynamicDialogRef } from 'primeng/dynamicdialog';
-import { catchError, Observable, tap, throwError } from 'rxjs';
+import { catchError, Observable, take } from 'rxjs';
 import { User } from '../models/user.model';
+import { AuthService } from '../services/auth.service';
 import { ToastService } from '../services/toast.service';
 import { UsersService } from '../services/users.service';
 import { SharedModule } from '../shared/shared.module';
@@ -18,74 +19,100 @@ import { SharedModule } from '../shared/shared.module';
         <p-progressSpinner strokeWidth="4" ariaLabel="loading"/>
       </div>
     }
-    @if (getUsers()) {
-      <div class="table-container mt-3">
-        <p-table
-          [value]="getUsers()"
-          selectionMode="single"
-          [(selection)]="selectedUser"
-          dataKey="uid"
-          (onRowSelect)="onRowSelected($event)"
-          (onRowUnselect)="onRowUnSelected($event)">
-          <ng-template #caption>
-            <div class="grid grid-cols-1">
-              <p class="hidden md:block text-center text-lg md:text-xl text-sky-500">
-                Change User Roles
-              </p>
-              <p class="hidden md:block text-center">
-                Click on row to automatic change role, Click again to role back
-              </p>
-            </div>
-          </ng-template>
-          <ng-template #header>
-            <tr>
-              <th>Email</th>
-              <th>displayName</th>
-              <th>Role</th>
-            </tr>
-          </ng-template>
-          <ng-template #body let-user let-i="rowIndex">
-            <tr [pSelectableRow]="user">
-              @if (user.role != 'admin' && user.role != 'manager') {
-                <td>{{ user.email }}</td>
-                <td>{{ user.displayName }}</td>
-                <td>{{ user.role }}</td>
-              }
-            </tr>
-          </ng-template>
-        </p-table>
+    @if (!admin()) {
+      <div class="flex items-center justify-center h-45 w-full bg-red-400 text-white text-5xl font-bold rounded-md">
+        Not Authorized
       </div>
+    } @else {
+      @if ((users$ | async); as users) {
+        <div class="table-container mt-3">
+          <p-table
+            [value]="users"
+            [selectionMode]="'single'"
+            [(selection)]="selectedUser"
+            [dataKey]="'uid'"
+            (onRowSelect)="onRowSelected($event)"
+            (onRowUnselect)="onRowUnSelected($event)">
+            <ng-template #caption>
+              <div class="grid grid-cols-1">
+                <p class="hidden md:block text-center text-lg md:text-xl text-sky-500">
+                  Change User Roles
+                </p>
+                <p class="hidden md:block text-center">
+                  Click on row to automatic change role, Click again to role back
+                </p>
+              </div>
+            </ng-template>
+            <ng-template #header>
+              <tr>
+                <th>Email</th>
+                <th>displayName</th>
+                <th>Role</th>
+              </tr>
+            </ng-template>
+            <ng-template #body let-user let-i="rowIndex">
+              <tr [pSelectableRow]="user">
+                @if (user.role != 'admin' && user.role != 'manager') {
+                  <td>{{ user.email }}</td>
+                  <td>{{ user.displayName }}</td>
+                  <td>{{ user.role }}</td>
+                }
+              </tr>
+            </ng-template>
+          </p-table>
+        </div>
+      }
     }
 
   `,
   styles: ``
 })
 export class UsersListComponent implements OnDestroy {
+  private authService = inject(AuthService);
+  private destroyRef = inject(DestroyRef);
   private userService: UsersService = inject(UsersService);
   private toastService = inject(ToastService);
 
   ref: DynamicDialogRef | undefined;
   selectedUser!: User;
-  users!: User[];
+  users$: Observable<User[]> | undefined;
   user!: User;
   loading = signal<boolean>(true);
+  isMember = signal<boolean>(false);
+  admin = signal<boolean>(false);
 
-  getUsers = toSignal(
-    (this.userService.getAllUsers() as Observable<User[]>)
+  constructor() {
+    this.chkRole();
+    this.getUsers();
+  }
+
+  getUsers() {
+    this.loading.set(true);
+
+    this.users$ = this.userService.getAllUsers()
       .pipe(
-        tap(() => {
-          this.loading.set(false);
-        }),
-        catchError((error: any) => {
+        takeUntilDestroyed(this.destroyRef),
+        catchError((error: Error) => {
           this.toastService.showError('Error', error.message);
-          this.loading.set(false);
-          return throwError(() => error);
-        })
-      ),
-    {
-      initialValue: [],
-    }
-  );
+          return [];
+        }),
+      );
+    this.users$.subscribe({
+      next: () => {
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+      },
+    });
+  }
+
+  chkRole() {
+    this.authService.userProfile$.pipe(take(1)).subscribe((user: any) => {
+      this.admin.set(user.role === 'admin' || user.role === 'manager');
+      this.isMember.set(user.role === 'member');
+    });
+  }
 
   ngOnDestroy(): void {
     if (this.ref) this.ref.destroy();
