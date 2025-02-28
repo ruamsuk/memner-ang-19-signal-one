@@ -1,28 +1,33 @@
+import { NgClass, NgOptimizedImage } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { SharedModule } from '../shared/shared.module';
+import { FormBuilder, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { ConfirmationService, MessageService } from 'primeng/api';
 import { DialogService, DynamicDialogRef } from 'primeng/dynamicdialog';
 import { AuthService } from '../services/auth.service';
-import { FormBuilder, Validators } from '@angular/forms';
+import { ToastService } from '../services/toast.service';
+import { SharedModule } from '../shared/shared.module';
 import { ForgotPasswordComponent } from './forgot-password.component';
-import { NgClass, NgOptimizedImage } from '@angular/common';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 
 @Component({
   selector: 'app-login',
-  imports: [SharedModule, RouterLink, NgClass, NgOptimizedImage, ConfirmDialogModule],
+  imports: [
+    SharedModule,
+    RouterLink,
+    NgClass,
+    NgOptimizedImage,
+  ],
   template: `
-    <div class="flex justify-center items-center h-screen gap-y-5">
+    <!--, background: '#1f2937' -->
+    <div class="center h-screen gap-y-5">
       <div>
         <form [formGroup]="loginForm" (ngSubmit)="login()">
-          <p-card [style]="{width:'360px'}">
+          <p-card [style]="{width:'360px'}" styleClass="drop-shadow-md">
             <div class="flex justify-center">
-              <img ngSrc="/images/primeng.png" alt="logo" height="51" width="48">
+              <img ngSrc="/images/primeng.png" alt="logo" priority height="51" width="48">
             </div>
             <div class="flex justify-center text-900 text-2xl font-medium my-5">
-              Inquiry 25.
+              Account App.
             </div>
             <ng-template pTemplate="p-card-content">
               <div class="field my-2">
@@ -70,7 +75,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
                 }
                 <div class="my-2">
                   <span
-                    class="sarabun text-sky-400 italic cursor-pointer hover:text-sky-300"
+                    class="sarabun text-sky-400 italic cursor-pointer hover:text-sky-300 hover:underline underline-offset-2"
                     (click)="forgotPassword()"
                   >
                     ลืมรหัสผ่าน
@@ -82,7 +87,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
               <div class="flex items-start justify-center">
                 @if (loading()) {
                   <button type="button"
-                          class="w-full inline-flex justify-center items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-indigo-500 hover:bg-indigo-400 transition ease-in-out duration-150 cursor-not-allowed"
+                          class="w-full inline-flex justify-center items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-white bg-indigo-400 hover:bg-indigo-300 transition ease-in-out duration-150 cursor-not-allowed"
                   >
                     <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg"
                          fill="none"
@@ -94,8 +99,12 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
                     Processing...
                   </button>
                 } @else {
-                  <button type="submit" [disabled]="loginForm.invalid" [ngClass]="{'btn-disabled': loginForm.invalid}"
-                          class="w-full inline-flex justify-center items-center px-4 py-2 font-semibold leading-6 text-lg shadow rounded-md text-white bg-indigo-500 hover:bg-indigo-400 transition ease-in-out duration-150">
+                  <button type="submit" [disabled]="loginForm.invalid"
+                          [ngClass]="{
+                          'btn-disabled': loginForm.invalid,
+                          'btn-enabled': !loginForm.invalid
+                          }"
+                          class="w-full inline-flex justify-center items-center px-4 py-2 font-semibold leading-6 text-lg shadow rounded-md text-white bg-indigo-400 transition ease-in-out duration-150">
                     Login
                   </button>
                 }
@@ -116,7 +125,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
               <div class="mt-2 mg-5 ml-2">
                 Not a member?
                 <a routerLink="/auth/sign-up" class="cursor-pointer">
-                  <span class="text-blue-500 underline underline-offset-2 hover:text-blue-400">Register</span>
+                  <span class="text-blue-500 hover:underline underline-offset-2 hover:text-blue-400">Register</span>
                 </a>
               </div>
             </ng-template>
@@ -132,12 +141,12 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 export class LoginComponent {
   authService = inject(AuthService);
   dialogService = inject(DialogService);
-  confirmService = inject(ConfirmationService);
-  message = inject(MessageService);
+  message = inject(ToastService);
   router = inject(Router);
   ref: DynamicDialogRef | undefined;
   loading = signal(false);
   private formBuilder = inject(FormBuilder);
+
   loginForm = this.formBuilder.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required, Validators.minLength(8)]],
@@ -145,7 +154,6 @@ export class LoginComponent {
 
   get isEmailValid(): string | boolean {
     const control = this.loginForm.get('email');
-
     const isInvalid = control?.invalid && control.touched;
 
     if (isInvalid) {
@@ -188,12 +196,7 @@ export class LoginComponent {
         const user = userCredential.user;
 
         if (!user.emailVerified) {
-          this.message.add({
-            severity: 'warn',
-            summary: 'Warning',
-            detail: 'Please verify your email before logging in',
-            life: 5000
-          });
+          this.message.showWarn('Warning', 'Please verify your email before logging in');
           this.loading.set(false);
           await this.router.navigateByUrl('/auth/login');
           return;
@@ -210,14 +213,14 @@ export class LoginComponent {
             ...userProfile,
           };
           localStorage.setItem('user', JSON.stringify(userData));
-          this.message.add({severity: 'success', summary: 'Success', detail: 'Login successful'});
+          this.message.showSuccess('Success', 'Login successful');
         } else {
-          this.message.add({severity: 'error', summary: 'Error', detail: 'User not found.'});
+          this.message.showError('Error', 'User not found.');
         }
       },
       error: (error) => {
         this.setTimer();
-        this.message.add({severity: 'error', summary: 'Error', detail: error.message});
+        this.message.showError('Error', `${error.message}`);
       },
       complete: () => {
         this.setTimer();
@@ -246,26 +249,18 @@ export class LoginComponent {
     });
   }
 
-  // facebookSignIn() {
-  //   this.authService.facebookSignIn().then(
-  //     () => this.router.navigateByUrl('/home')
-  //   );
-  // }
-
   googleSignIn() {
     this.authService.googleSignIn().then(
-      () => this.router.navigateByUrl('/home')
-    );
-  }
+      () => {
+        this.message.showSuccess(
+          'Success',
+          'Google Login successful',
+        );
+        this.router.navigateByUrl('/home').then();
+      }).catch((error) => {
+      console.error(error);
+    });
 
-  // private getUserProfile() {
-  //   const user = this.firebaseAuth.currentUser;
-  //   const ref = doc(this.firestore, 'users', `${ user?.uid }`);
-  //   if (ref) {
-  //     return docData(ref) as Observable<User | null>;
-  //   } else {
-  //     return of(null);
-  //   }
-  // }
+  }
 
 }

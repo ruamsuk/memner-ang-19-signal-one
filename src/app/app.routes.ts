@@ -1,5 +1,5 @@
-import { Routes } from '@angular/router';
 import { canActivate, redirectLoggedInTo, redirectUnauthorizedTo } from '@angular/fire/auth-guard';
+import { Routes } from '@angular/router';
 
 const redirectUnauthorizedToLogin = () =>
   redirectUnauthorizedTo(['auth/login']);
@@ -36,7 +36,7 @@ export const routes: Routes = [
       .then(m => m.MemberListComponent),
   },
   {
-    path: 'user',
+    path: 'users',
     ...canActivate(redirectUnauthorizedToLogin),
     loadComponent: () => import('./components/users-list.component')
       .then(m => m.UsersListComponent),

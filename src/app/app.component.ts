@@ -1,12 +1,12 @@
 import { Component, effect, HostListener, inject, signal } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
-import { SharedModule } from './shared/shared.module';
 import { Auth, onAuthStateChanged } from '@angular/fire/auth';
+import { RouterOutlet } from '@angular/router';
 import { TranslateService } from '@ngx-translate/core';
 import { PrimeNG } from 'primeng/config';
-import { AuthService } from './services/auth.service';
-import { HeaderComponent } from './pages/header.component';
 import { FooterComponent } from './pages/footer.component';
+import { HeaderComponent } from './pages/header.component';
+import { AuthService } from './services/auth.service';
+import { SharedModule } from './shared/shared.module';
 
 @Component({
   selector: 'app-root',
@@ -23,7 +23,22 @@ import { FooterComponent } from './pages/footer.component';
       <app-footer/>
     }
   `,
-  styles: [],
+  styles: `
+    :host ::ng-deep .p-toast-message {
+      font-family: 'Sarabun', sans-serif;
+      font-size: 1.5rem;
+      font-style: italic;
+    }
+
+    :host ::ng-deep .p-toast-detail {
+      font-style: italic;
+      font-size: 1.125rem;
+    }
+
+    :host ::ng-deep .p-toast-summary {
+      font-size: 1.125rem !important;
+    }
+  `,
 })
 export class AppComponent {
   private authService: AuthService = inject(AuthService);

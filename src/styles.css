@@ -19,65 +19,143 @@
   --font-leera: 'Leelawadee UI', sans-serif;
 }
 
-html {
-  font-family: Sarabun, "Leelawadee UI", sans-serif;
-}
-
-.center {
-  @apply flex justify-center items-center;
-}
-
-.loading-shade {
-  @apply fixed inset-0 bg-black opacity-15 z-[9999999] flex items-center justify-center;
-}
-
-.btn-disabled {
-  @apply bg-indigo-400 text-white cursor-not-allowed;
-}
-
-.btn-enabled {
-  @apply bg-indigo-600 text-white cursor-pointer;
-
-  /* Mouse hover effect */
-
-  &:hover {
-    @apply bg-indigo-700;
+/** @apply */
+@layer base {
+  html {
+    font-family: Sarabun, "Leelawadee UI", sans-serif;
   }
 }
 
-.ng-invalid.ng-dirty {
-  color: #e93434;
+@layer components {
+  .loading-shade {
+    @apply fixed inset-0 bg-black z-[9999999] flex items-center justify-center;
+    background-color: rgba(0, 0, 0, 0.15);
+  }
+
+  .btn-disabled {
+    @apply bg-indigo-400 text-white cursor-not-allowed;
+  }
+
+  .btn-enabled {
+    @apply bg-indigo-600 text-white cursor-pointer;
+    /* Mouse hover effect */
+
+    &:hover {
+      @apply bg-indigo-700;
+    }
+  }
+
+  .p-dialog .p-dialog-header .p-dialog-title {
+    @apply font-semibold text-xl font-thasadith text-green-400;
+  }
+
 }
 
-.p-error {
-  color: #e93434;
+@layer utilities {
+  .center {
+    @apply flex justify-center items-center;
+  }
+
+  .center-x {
+    @apply flex justify-center;
+  }
+
+  .icons {
+    @apply absolute right-2 top-1.5 transform translate-y-[50%] cursor-pointer;
+  }
+
+  .ng-invalid.ng-dirty {
+    color: #e93434;
+  }
+
+  .p-error {
+    color: #e93434;
+  }
+
+  .table-container {
+    @apply overflow-x-auto overflow-y-hidden w-[750px] mx-auto max-w-full md:mx-auto;
+  }
+
+  .p-dialog .p-dialog-header .p-dialog-title {
+    @apply font-semibold font-thasadith text-green-400;
+  }
+
+  .isIncome {
+    color: #0af225 !important;
+    font-weight: 500 !important;
+  }
+
+  .row-income {
+    background-color: rgba(227, 248, 219, 0.05) !important;
+
+    &:hover {
+      background-color: rgba(227, 248, 219, 0.1) !important;
+    }
+  }
 }
 
-.table-container {
-  @apply overflow-x-auto overflow-y-hidden w-[750px] mx-auto max-w-full md:mx-auto;
-}
 
 th {
-  @apply text-teal-400 text-sm md:text-lg
+  @apply text-teal-400 bg-gray-100 dark:bg-gray-900 text-lg md:text-lg
 }
 
-td {
-  /*@apply text-slate-300;*/
-}
 
-.icons {
-  @apply absolute right-2 top-1.5 transform translate-y-[50%] cursor-pointer;
-}
+/*html {*/
+/*  font-family: Sarabun, "Leelawadee UI", sans-serif;*/
+/*}*/
 
-.p-dialog .p-dialog-header .p-dialog-title {
-  @apply font-semibold text-xl font-thasadith text-green-400
-}
+/*.center {*/
+/*  @apply flex justify-center items-center;*/
+/*}*/
 
-.isIncome {
-  color: #0af225 !important;
-  font-weight: 500 !important;
-}
+/*.loading-shade {*/
+/*  @apply fixed inset-0 bg-black opacity-15 z-[9999999] flex items-center justify-center;*/
+/*}*/
 
-.row-income {
-  background-color: rgba(227, 248, 219, 0.05) !important;
-}
+/*.btn-disabled {*/
+/*  @apply bg-indigo-400 text-white cursor-not-allowed;*/
+/*}*/
+
+/*.btn-enabled {*/
+/*  @apply bg-indigo-600 text-white cursor-pointer;*/
+
+/*  !* Mouse hover effect *!*/
+
+/*  &:hover {*/
+/*    @apply bg-indigo-700;*/
+/*  }*/
+/*}*/
+
+/*.ng-invalid.ng-dirty {*/
+/*  color: #e93434;*/
+/*}*/
+
+/*.p-error {*/
+/*  color: #e93434;*/
+/*}*/
+
+/*.table-container {*/
+/*  @apply overflow-x-auto overflow-y-hidden w-[750px] mx-auto max-w-full md:mx-auto;*/
+/*}*/
+
+
+/*td {*/
+/*  !*@apply text-slate-300;*!*/
+/*}*/
+
+/*.icons {*/
+/*  @apply absolute right-2 top-1.5 transform translate-y-[50%] cursor-pointer;*/
+/*}*/
+
+/*.p-dialog .p-dialog-header .p-dialog-title {*/
+/*  @apply font-semibold text-xl font-thasadith text-green-400*/
+/*}*/
+
+/*.isIncome {*/
+/*  color: #0af225 !important;*/
+/*  font-weight: 500 !important;*/
+/*}*/
+
+/*.row-income {*/
+/*  background-color: rgba(227, 248, 219, 0.05) !important;*/
+/*}*/
